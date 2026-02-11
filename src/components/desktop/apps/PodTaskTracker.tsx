@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Mail, MessageSquare, Phone, Plus, X, Edit3 } from 'lucide-react'
 import * as Sentry from '@sentry/nextjs'
 
@@ -137,6 +137,59 @@ export function PodTaskTracker() {
     priority: 'medium',
     dueDate: new Date().toISOString().split('T')[0]
   })
+
+  // Test Sentry on component mount
+  useEffect(() => {
+    console.log('========== SENTRY DEBUG START ==========')
+    console.log('[POD Tracker] Sentry object:', Sentry)
+    console.log('[POD Tracker] Sentry.init function:', typeof Sentry.init)
+    console.log('[POD Tracker] DSN from env:', process.env.NEXT_PUBLIC_SENTRY_DSN)
+
+    // Check if Sentry is already initialized
+    try {
+      const client = Sentry.getClient()
+      console.log('[POD Tracker] Sentry client already exists?', !!client)
+      if (client) {
+        console.log('[POD Tracker] Sentry already initialized, skipping init')
+      }
+    } catch (e) {
+      console.log('[POD Tracker] No client yet, will initialize')
+    }
+
+    // Try to initialize Sentry manually
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      console.log('[POD Tracker] ⚡ About to call Sentry.init()...')
+      try {
+        const result = Sentry.init({
+          dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+          debug: true,
+          tracesSampleRate: 1.0,
+          beforeSend(event) {
+            console.log('[POD Tracker] 🚀 beforeSend hook - event about to be sent:', event)
+            return event
+          },
+        })
+        console.log('[POD Tracker] ✅ Sentry.init() completed, result:', result)
+      } catch (initError) {
+        console.error('[POD Tracker] ❌ Error during Sentry.init():', initError)
+      }
+    } else {
+      console.error('[POD Tracker] ❌ NEXT_PUBLIC_SENTRY_DSN is not set!')
+    }
+
+    // Test capture
+    console.log('[POD Tracker] 📤 Attempting to capture test message...')
+    try {
+      const eventId = Sentry.captureMessage('POD Task Tracker loaded - testing Sentry', {
+        level: 'info',
+        tags: { member: 'saidredouane', test: 'component-mount' }
+      })
+      console.log('[POD Tracker] ✅ captureMessage returned eventId:', eventId)
+    } catch (error) {
+      console.error('[POD Tracker] ❌ Error calling captureMessage:', error)
+    }
+    console.log('========== SENTRY DEBUG END ==========')
+  }, [])
 
   const filteredTasks = tasks.filter(task => {
     if (filterAssignee !== 'all' && task.assignee !== filterAssignee) return false
