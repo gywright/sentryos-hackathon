@@ -169,41 +169,6 @@ export function PodTaskTracker() {
       return
     }
 
-    // Intentional error for Slack and Call sources to test Sentry
-    if (newTask.source === 'slack' || newTask.source === 'call') {
-      const error = new Error(`Task creation from ${newTask.source} source is not yet implemented`)
-
-      // Set user context
-      Sentry.setUser({
-        username: 'SaidRedouane',
-        id: 'said-redouane',
-      })
-
-      // Capture exception with additional context
-      Sentry.captureException(error, {
-        tags: {
-          feature: 'task-creation',
-          source: newTask.source,
-          user: 'SaidRedouane',
-          assignee: newTask.assignee!,
-          priority: newTask.priority!,
-        },
-        contexts: {
-          task: {
-            title: newTask.title,
-            customer: newTask.customer,
-            assignee: newTask.assignee,
-            source: newTask.source,
-          }
-        },
-        level: 'error'
-      })
-
-      console.error(`Sentry error captured: ${newTask.source} integration not available`, error)
-      alert(`Error: ${newTask.source} integration is not yet available. This error has been sent to Sentry.`)
-      return
-    }
-
     const task: Task = {
       id: Date.now().toString(),
       title: newTask.title!,
