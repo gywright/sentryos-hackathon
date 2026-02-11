@@ -138,8 +138,8 @@ function DesktopContent() {
 
       {/* Footer text */}
       <div className="absolute bottom-16 left-0 right-0 flex justify-center pointer-events-none">
-        <p className="text-white/50 text-sm font-mono">
-          built w/ Love By WARM
+        <p className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 text-2xl font-bold tracking-wider">
+          Built with Love ❤️ By WARM
         </p>
       </div>
 
