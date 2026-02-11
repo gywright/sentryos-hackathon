@@ -136,32 +136,11 @@ function DesktopContent() {
         ))}
       </div>
 
-      {/* Desktop icons area - z-10 to ensure it's above windows container */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10" onClick={(e) => e.stopPropagation()}>
-        <DesktopIcon
-          id="install-guide"
-          label="Install Guide"
-          icon="document"
-          onDoubleClick={openInstallGuide}
-          selected={selectedIcon === 'install-guide'}
-          onSelect={() => setSelectedIcon('install-guide')}
-        />
-        <DesktopIcon
-          id="agents-folder"
-          label="Agents"
-          icon="folder"
-          onDoubleClick={openAgentsFolder}
-          selected={selectedIcon === 'agents-folder'}
-          onSelect={() => setSelectedIcon('agents-folder')}
-        />
-        <DesktopIcon
-          id="chat"
-          label="Chat"
-          icon="chat"
-          onDoubleClick={openChatWindow}
-          selected={selectedIcon === 'chat'}
-          onSelect={() => setSelectedIcon('chat')}
-        />
+      {/* Footer text */}
+      <div className="absolute bottom-16 left-0 right-0 flex justify-center pointer-events-none">
+        <p className="text-white/50 text-sm font-mono">
+          built w/ Love By WARM
+        </p>
       </div>
 
       {/* Taskbar */}
