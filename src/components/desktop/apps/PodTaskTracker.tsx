@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Mail, MessageSquare, Phone, Plus, X, Edit3 } from 'lucide-react'
+import * as Sentry from '@sentry/nextjs'
 
 type TaskSource = 'email' | 'slack' | 'call' | 'manual'
 type TaskStatus = 'pending' | 'in-progress' | 'completed'
@@ -106,19 +107,19 @@ const SOURCE_ICONS = {
 const PRIORITY_COLORS = {
   low: 'bg-green-500/20 text-green-300',
   medium: 'bg-yellow-500/20 text-yellow-300',
-  high: 'bg-red-500/20 text-red-300'
+  high: 'bg-[#E1567C]/20 text-[#E1567C]'
 }
 
 const STATUS_COLORS = {
-  pending: 'bg-gray-500/20 text-gray-300',
-  'in-progress': 'bg-blue-500/20 text-blue-300',
+  pending: 'bg-[#80708F]/20 text-[#b4a9be]',
+  'in-progress': 'bg-[#AD6CAA]/20 text-[#AD6CAA]',
   completed: 'bg-green-500/20 text-green-300'
 }
 
 const ASSIGNEE_COLORS = {
-  AE: 'bg-purple-500/20 text-purple-300',
-  CSM: 'bg-pink-500/20 text-pink-300',
-  SE: 'bg-indigo-500/20 text-indigo-300'
+  AE: 'bg-[#AD6CAA]/20 text-[#AD6CAA]',
+  CSM: 'bg-[#E1567C]/20 text-[#E1567C]',
+  SE: 'bg-[#80708F]/20 text-[#b4a9be]'
 }
 
 export function PodTaskTracker() {
@@ -168,6 +169,41 @@ export function PodTaskTracker() {
       return
     }
 
+    // Intentional error for Slack and Call sources to test Sentry
+    if (newTask.source === 'slack' || newTask.source === 'call') {
+      const error = new Error(`Task creation from ${newTask.source} source is not yet implemented`)
+
+      // Set user context
+      Sentry.setUser({
+        username: 'SaidRedouane',
+        id: 'said-redouane',
+      })
+
+      // Capture exception with additional context
+      Sentry.captureException(error, {
+        tags: {
+          feature: 'task-creation',
+          source: newTask.source,
+          user: 'SaidRedouane',
+          assignee: newTask.assignee!,
+          priority: newTask.priority!,
+        },
+        contexts: {
+          task: {
+            title: newTask.title,
+            customer: newTask.customer,
+            assignee: newTask.assignee,
+            source: newTask.source,
+          }
+        },
+        level: 'error'
+      })
+
+      console.error(`Sentry error captured: ${newTask.source} integration not available`, error)
+      alert(`Error: ${newTask.source} integration is not yet available. This error has been sent to Sentry.`)
+      return
+    }
+
     const task: Task = {
       id: Date.now().toString(),
       title: newTask.title!,
@@ -196,18 +232,18 @@ export function PodTaskTracker() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#0F0C14] text-white">
+    <div className="h-full flex flex-col bg-[#2B2233] text-white">
       {/* Header */}
-      <div className="p-4 border-b border-purple-500/20 flex items-center justify-between">
+      <div className="p-4 border-b border-[#4D4158] flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-[#AD6CAA] to-[#E1567C] bg-clip-text text-transparent mb-2">
             POD Task Tracker
           </h1>
-          <p className="text-sm text-gray-400">Sales POD Task Management for Customer Success</p>
+          <p className="text-sm text-[#b4a9be]">Sales POD Task Management for Customer Success</p>
         </div>
         <button
           onClick={() => setShowNewTaskForm(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-semibold transition-all"
+          className="flex items-center gap-2 bg-gradient-to-r from-[#AD6CAA] to-[#E1567C] hover:opacity-90 text-white px-4 py-2 rounded-lg font-semibold transition-all"
         >
           <Plus size={20} />
           New Task
@@ -215,33 +251,33 @@ export function PodTaskTracker() {
       </div>
 
       {/* Stats */}
-      <div className="p-4 grid grid-cols-4 gap-3 border-b border-purple-500/20">
-        <div className="bg-purple-500/10 rounded-lg p-3 border border-purple-500/20">
-          <div className="text-2xl font-bold text-purple-300">{taskStats.total}</div>
-          <div className="text-xs text-gray-400">Total Tasks</div>
+      <div className="p-4 grid grid-cols-4 gap-3 border-b border-[#4D4158]">
+        <div className="bg-[#AD6CAA]/10 rounded-lg p-3 border border-[#AD6CAA]/20">
+          <div className="text-2xl font-bold text-[#AD6CAA]">{taskStats.total}</div>
+          <div className="text-xs text-[#b4a9be]">Total Tasks</div>
         </div>
-        <div className="bg-gray-500/10 rounded-lg p-3 border border-gray-500/20">
-          <div className="text-2xl font-bold text-gray-300">{taskStats.pending}</div>
-          <div className="text-xs text-gray-400">Pending</div>
+        <div className="bg-[#80708F]/10 rounded-lg p-3 border border-[#80708F]/20">
+          <div className="text-2xl font-bold text-[#b4a9be]">{taskStats.pending}</div>
+          <div className="text-xs text-[#b4a9be]">Pending</div>
         </div>
-        <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/20">
-          <div className="text-2xl font-bold text-blue-300">{taskStats.inProgress}</div>
-          <div className="text-xs text-gray-400">In Progress</div>
+        <div className="bg-[#AD6CAA]/10 rounded-lg p-3 border border-[#AD6CAA]/20">
+          <div className="text-2xl font-bold text-[#AD6CAA]">{taskStats.inProgress}</div>
+          <div className="text-xs text-[#b4a9be]">In Progress</div>
         </div>
         <div className="bg-green-500/10 rounded-lg p-3 border border-green-500/20">
           <div className="text-2xl font-bold text-green-300">{taskStats.completed}</div>
-          <div className="text-xs text-gray-400">Completed</div>
+          <div className="text-xs text-[#b4a9be]">Completed</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="p-4 flex gap-4 border-b border-purple-500/20">
+      <div className="p-4 flex gap-4 border-b border-[#4D4158]">
         <div className="flex gap-2 items-center">
-          <span className="text-sm text-gray-400">Filter by Role:</span>
+          <span className="text-sm text-[#b4a9be]">Filter by Role:</span>
           <select
             value={filterAssignee}
             onChange={(e) => setFilterAssignee(e.target.value as PodMember | 'all')}
-            className="bg-[#1a1626] border border-purple-500/20 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-purple-500"
+            className="bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-[#AD6CAA]"
           >
             <option value="all">All Roles</option>
             <option value="AE">Account Executive</option>
@@ -250,11 +286,11 @@ export function PodTaskTracker() {
           </select>
         </div>
         <div className="flex gap-2 items-center">
-          <span className="text-sm text-gray-400">Filter by Status:</span>
+          <span className="text-sm text-[#b4a9be]">Filter by Status:</span>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as TaskStatus | 'all')}
-            className="bg-[#1a1626] border border-purple-500/20 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-purple-500"
+            className="bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-[#AD6CAA]"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -267,14 +303,14 @@ export function PodTaskTracker() {
       {/* Task List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {filteredTasks.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-[#80708F]">
             No tasks found matching filters
           </div>
         ) : (
           filteredTasks.map((task) => (
             <div
               key={task.id}
-              className="bg-[#1a1626] border border-purple-500/20 rounded-lg p-4 hover:border-purple-500/40 transition-colors cursor-pointer"
+              className="bg-[#4D4158] border border-[#80708F]/30 rounded-lg p-4 hover:border-[#AD6CAA]/50 transition-colors cursor-pointer"
               onClick={() => toggleTaskStatus(task.id)}
             >
               <div className="flex items-start justify-between mb-2">
@@ -282,15 +318,15 @@ export function PodTaskTracker() {
                   <div className="flex items-center gap-2 mb-1">
                     {(() => {
                       const Icon = SOURCE_ICONS[task.source]
-                      return <Icon size={18} className="text-purple-400" />
+                      return <Icon size={18} className="text-[#E1567C]" />
                     })()}
                     <h3 className="font-semibold text-white">{task.title}</h3>
                   </div>
-                  <p className="text-sm text-gray-400 mb-2">{task.description}</p>
+                  <p className="text-sm text-[#b4a9be] mb-2">{task.description}</p>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-purple-300">👤 {task.customer}</span>
-                    <span className="text-gray-500">•</span>
-                    <span className="text-gray-400">Due: {task.dueDate}</span>
+                    <span className="text-[#E1567C]">👤 {task.customer}</span>
+                    <span className="text-[#80708F]">•</span>
+                    <span className="text-[#b4a9be]">Due: {task.dueDate}</span>
                   </div>
                 </div>
               </div>
@@ -313,7 +349,7 @@ export function PodTaskTracker() {
       {/* New Task Modal */}
       {showNewTaskForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1626] border border-purple-500/20 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#2B2233] border border-[#4D4158] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Create New Task</h2>
@@ -327,66 +363,66 @@ export function PodTaskTracker() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[#EBE6EF] mb-2">
                     Task Title *
                   </label>
                   <input
                     type="text"
                     value={newTask.title}
                     onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    className="w-full bg-[#0F0C14] border border-purple-500/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                    className="w-full bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-2 text-white focus:outline-none focus:border-[#AD6CAA]"
                     placeholder="e.g., Follow up on integration setup"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[#EBE6EF] mb-2">
                     Description
                   </label>
                   <textarea
                     value={newTask.description}
                     onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                    className="w-full bg-[#0F0C14] border border-purple-500/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500 h-24 resize-none"
+                    className="w-full bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-2 text-white focus:outline-none focus:border-[#AD6CAA] h-24 resize-none"
                     placeholder="Add more details about this task..."
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-[#EBE6EF] mb-2">
                       Customer *
                     </label>
                     <input
                       type="text"
                       value={newTask.customer}
                       onChange={(e) => setNewTask({ ...newTask, customer: e.target.value })}
-                      className="w-full bg-[#0F0C14] border border-purple-500/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-2 text-white focus:outline-none focus:border-[#AD6CAA]"
                       placeholder="e.g., Acme Corp"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-[#EBE6EF] mb-2">
                       Due Date
                     </label>
                     <input
                       type="date"
                       value={newTask.dueDate}
                       onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                      className="w-full bg-[#0F0C14] border border-purple-500/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-2 text-white focus:outline-none focus:border-[#AD6CAA]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-[#EBE6EF] mb-2">
                       Assign To
                     </label>
                     <select
                       value={newTask.assignee}
                       onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value as PodMember })}
-                      className="w-full bg-[#0F0C14] border border-purple-500/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-2 text-white focus:outline-none focus:border-[#AD6CAA]"
                     >
                       <option value="AE">Account Executive</option>
                       <option value="CSM">Customer Success</option>
@@ -395,13 +431,13 @@ export function PodTaskTracker() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-[#EBE6EF] mb-2">
                       Priority
                     </label>
                     <select
                       value={newTask.priority}
                       onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as Task['priority'] })}
-                      className="w-full bg-[#0F0C14] border border-purple-500/20 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#4D4158] border border-[#80708F]/30 rounded px-3 py-2 text-white focus:outline-none focus:border-[#AD6CAA]"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -411,7 +447,7 @@ export function PodTaskTracker() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-[#EBE6EF] mb-2">
                     Source
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -423,8 +459,8 @@ export function PodTaskTracker() {
                           onClick={() => setNewTask({ ...newTask, source })}
                           className={`flex items-center justify-center gap-2 px-4 py-2 rounded border transition-all ${
                             newTask.source === source
-                              ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-                              : 'bg-[#0F0C14] border-purple-500/20 text-gray-400 hover:border-purple-500/40'
+                              ? 'bg-[#AD6CAA]/20 border-[#AD6CAA] text-[#AD6CAA]'
+                              : 'bg-[#4D4158] border-[#80708F]/30 text-[#b4a9be] hover:border-[#AD6CAA]/50'
                           }`}
                         >
                           <Icon size={16} />
@@ -439,13 +475,13 @@ export function PodTaskTracker() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleCreateTask}
-                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-semibold transition-all"
+                  className="flex-1 bg-gradient-to-r from-[#AD6CAA] to-[#E1567C] hover:opacity-90 text-white px-4 py-2 rounded-lg font-semibold transition-all"
                 >
                   Create Task
                 </button>
                 <button
                   onClick={() => setShowNewTaskForm(false)}
-                  className="px-4 py-2 bg-[#0F0C14] border border-purple-500/20 text-gray-300 rounded-lg hover:border-purple-500/40 transition-all"
+                  className="px-4 py-2 bg-[#4D4158] border border-[#80708F]/30 text-[#EBE6EF] rounded-lg hover:border-[#AD6CAA]/50 transition-all"
                 >
                   Cancel
                 </button>

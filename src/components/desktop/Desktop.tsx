@@ -120,7 +120,7 @@ function DesktopContent() {
     <div className="fixed inset-0 desktop-wallpaper overflow-hidden" onClick={handleDesktopClick}>
       {/* Main App Container */}
       <div className="absolute inset-0 bottom-24 flex items-center justify-center p-8 pb-4">
-        <div className="w-full max-w-6xl h-full bg-[#0F0C14]/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden">
+        <div className="w-full max-w-6xl h-full bg-[#2B2233]/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-[#4D4158] overflow-hidden">
           <PodTaskTracker />
         </div>
       </div>
@@ -134,7 +134,7 @@ function DesktopContent() {
 
       {/* Footer text - positioned between app and taskbar */}
       <div className="absolute bottom-14 left-0 right-0 flex justify-center pointer-events-none z-10">
-        <p className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 text-xl font-bold tracking-wider">
+        <p className="text-transparent bg-clip-text bg-gradient-to-r from-[#AD6CAA] via-[#E1567C] to-[#AD6CAA] text-xl font-bold tracking-wider">
           Built with Love ❤️ By WARM
         </p>
       </div>
