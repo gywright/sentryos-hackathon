@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { FileText, Folder, Terminal, Settings, MessageCircle } from 'lucide-react'
+import * as Sentry from '@sentry/nextjs'
 
 interface DesktopIconProps {
   id: string
@@ -21,7 +22,7 @@ const iconMap = {
   chat: MessageCircle,
 }
 
-export function DesktopIcon({ label, icon, onDoubleClick, selected, onSelect }: DesktopIconProps) {
+export function DesktopIcon({ id, label, icon, onDoubleClick, selected, onSelect }: DesktopIconProps) {
   const IconComponent = iconMap[icon] || FileText
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const clickCountRef = useRef(0)
@@ -37,6 +38,10 @@ export function DesktopIcon({ label, icon, onDoubleClick, selected, onSelect }: 
       clickTimeoutRef.current = setTimeout(() => {
         // Single click - just select
         if (clickCountRef.current === 1) {
+          Sentry.logger.info('Desktop icon selected', { iconId: id, label })
+          Sentry.metrics.count('desktop.icon.select', 1, {
+            attributes: { icon_type: id }
+          })
           onSelect?.()
         }
         clickCountRef.current = 0
@@ -47,6 +52,10 @@ export function DesktopIcon({ label, icon, onDoubleClick, selected, onSelect }: 
         clearTimeout(clickTimeoutRef.current)
       }
       clickCountRef.current = 0
+      Sentry.logger.info('Desktop icon double-clicked', { iconId: id, label })
+      Sentry.metrics.count('desktop.icon.double_click', 1, {
+        attributes: { icon_type: id }
+      })
       onSelect?.() // Also select on double click
       onDoubleClick()
     }
