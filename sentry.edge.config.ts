@@ -12,4 +12,14 @@ Sentry.init({
 
   // Enable structured logging
   enableLogs: true,
+
+  // Set custom tags
+  initialScope: {
+    tags: {
+      whichTeamMember: 'Gene',
+    },
+  },
 });
+
+// Alternative: Set tag after initialization
+Sentry.setTag('whichTeamMember', 'Gene');
