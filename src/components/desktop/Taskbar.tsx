@@ -3,6 +3,7 @@
 import { Clock } from 'lucide-react'
 import { useWindowManager } from './WindowManager'
 import { useEffect, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 export function Taskbar() {
   const { windows, restoreWindow, focusWindow } = useWindowManager()
@@ -28,6 +29,33 @@ export function Taskbar() {
     } else {
       focusWindow(id)
     }
+  }
+
+  const handleTimeClick = () => {
+    // Create and send a fake error to Sentry
+    const error = new Error('clicked on the time')
+    Sentry.captureException(error, {
+      level: 'error',
+      tags: {
+        component: 'Taskbar',
+        action: 'time_click',
+      },
+      extra: {
+        timestamp: new Date().toISOString(),
+        currentTime: time,
+      },
+    })
+
+    // Also log the event
+    Sentry.logger.error('User clicked on the time display', {
+      time,
+      component: 'Taskbar',
+    })
+
+    // Track the click as a metric
+    Sentry.metrics.count('taskbar.time.click', 1)
+
+    console.log('Fake error "clicked on the time" sent to Sentry')
   }
 
   return (
@@ -75,10 +103,14 @@ export function Taskbar() {
 
       {/* System tray area */}
       <div className="flex items-center gap-3 px-2">
-        <div className="flex items-center gap-1.5 text-[#9086a3] text-sm">
+        <button
+          onClick={handleTimeClick}
+          className="flex items-center gap-1.5 text-[#9086a3] text-sm hover:text-[#e8e4f0] hover:bg-[#2a2438] px-2 py-1 rounded transition-colors cursor-pointer"
+          title="Click to send test error to Sentry"
+        >
           <Clock className="w-4 h-4" />
           <span className="tabular-nums">{time}</span>
-        </div>
+        </button>
       </div>
     </div>
   )
