@@ -184,7 +184,7 @@ export function PodTaskTracker() {
         tags: {
           feature: 'task-creation',
           source: newTask.source,
-          user: 'SaidRedouane',
+          member: 'saidredouane',
           assignee: newTask.assignee!,
           priority: newTask.priority!,
         },
