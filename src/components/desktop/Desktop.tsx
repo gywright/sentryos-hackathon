@@ -7,6 +7,7 @@ import { DesktopIcon } from './DesktopIcon'
 import { Notepad } from './apps/Notepad'
 import { FolderView, FolderItem } from './apps/FolderView'
 import { Chat } from './apps/Chat'
+import { PodTaskTracker } from './apps/PodTaskTracker'
 import { useState } from 'react'
 
 const INSTALL_GUIDE_CONTENT = `# SentryOS Install Guide
@@ -117,16 +118,11 @@ function DesktopContent() {
 
   return (
     <div className="fixed inset-0 desktop-wallpaper overflow-hidden" onClick={handleDesktopClick}>
-      {/* Centered Sentry logo watermark */}
-      <div className="absolute inset-0 bottom-12 flex items-center justify-center pointer-events-none">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/sentry-logo-glyph-light.svg"
-          alt="Sentry"
-          width={400}
-          height={400}
-          className="select-none"
-        />
+      {/* Main App Container */}
+      <div className="absolute inset-0 bottom-12 flex items-center justify-center p-8">
+        <div className="w-full max-w-6xl h-full bg-[#0F0C14]/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden">
+          <PodTaskTracker />
+        </div>
       </div>
 
       {/* Windows container - pointer-events-none so clicks pass through to desktop/icons */}
